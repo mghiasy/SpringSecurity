@@ -29,8 +29,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/","index")
-                .permitAll()
+                .antMatchers("/","index").permitAll() //this antMatchers for all the users
+                .antMatchers("/api/**").hasRole(STUDENT.name()) //everything after api just accessible by student
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -52,6 +52,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
                 .roles(STUDENT.name()) //will be matched to ROLE_STUDENT
                 .build();
+        
         return new InMemoryUserDetailsManager(newUser,adminUser);
     }
 }
