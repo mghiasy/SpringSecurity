@@ -32,4 +32,6 @@ public class StudentManagementController {
         System.out.println("update student "+studentId);
         System.out.println(String.format("%s %s ", studentId,student));
     }
+
+
 }
