@@ -24,6 +24,7 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 <!--		automatically start app with spring Loginform-->
+<!--		used for form-based auth-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
