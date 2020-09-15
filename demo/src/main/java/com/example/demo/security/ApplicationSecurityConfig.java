@@ -53,8 +53,16 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .rememberMe() //remember credentials as default for 2 weeks
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
-                    .key("somethingverysecure"); //Key is used to hash the content of Cookie (userName & ExpirationDate)
+                    .key("somethingverysecure") //Key is used to hash the content of Cookie (userName &  ExpirationDate)
+                .and()
+                .logout()
+                    .logoutUrl("/logout") //customized logout endpoint
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID","remember-me")
+                    .logoutSuccessUrl("/login");
     }
+
 
     @Override
     @Bean //? why
