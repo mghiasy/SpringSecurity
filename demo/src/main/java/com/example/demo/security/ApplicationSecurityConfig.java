@@ -44,7 +44,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 //.httpBasic(); //is used for Basic-Auth
-                .formLogin();//is used for Form-Authentication
+                .formLogin()//is used for Form-Authentication
+                .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
+                .defaultSuccessUrl("/courses",true); //redirect to this Url after login
     }
 
     @Override
