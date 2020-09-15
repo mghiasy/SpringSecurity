@@ -46,7 +46,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 //.httpBasic(); //is used for Basic-Auth
                 .formLogin()//is used for Form-Authentication
                 .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
-                .defaultSuccessUrl("/courses",true); //redirect to this Url after login
+                .defaultSuccessUrl("/courses",true)//redirect to this Url after login
+                .and()
+                .rememberMe(); //remember credentials as default for 2 weeks
     }
 
     @Override
