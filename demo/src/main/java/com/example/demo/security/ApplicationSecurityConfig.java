@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.concurrent.TimeUnit;
 
@@ -37,19 +38,19 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()//later
                 .authorizeRequests()
                 //here Order has matter => they executed line by line
-                .antMatchers("/","index").permitAll() //this antMatchers for all the users
-                .antMatchers("/api/**").hasRole(STUDENT.name()) //everything after api just accessible by student
-//                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission()) //return Course:wite
-//                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
-//                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
-//                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
-                .anyRequest()
-                .authenticated()
+                    .antMatchers("/","index").permitAll() //this antMatchers for all the users
+                    .antMatchers("/api/**").hasRole(STUDENT.name()) //everything after api just accessible by student
+//                  .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission()) //return Course:wite
+//                  .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
+//                  .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
+//                  .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
+                    .anyRequest()
+                    .authenticated()
                 .and()
                 //.httpBasic(); //is used for Basic-Auth
                 .formLogin()//is used for Form-Authentication
-                .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
-                .defaultSuccessUrl("/courses",true)//redirect to this Url after login
+                    .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
+                    .defaultSuccessUrl("/courses",true)//redirect to this Url after login
                 .and()
                 .rememberMe() //remember credentials as default for 2 weeks
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
@@ -57,6 +58,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                     .logoutUrl("/logout") //customized logout endpoint
+                    //because we have disabled csrf => otherwise we should delete this line => because should be POST
+                    //means we wanna go to /logout with GET method
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET")) //to set logout as a GET method
                     .clearAuthentication(true)
                     .invalidateHttpSession(true)
                     .deleteCookies("JSESSIONID","remember-me")
