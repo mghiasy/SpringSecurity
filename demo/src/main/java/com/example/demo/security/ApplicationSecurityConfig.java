@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,15 +14,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.example.demo.security.ApplicationUserPermission.*;
 import static com.example.demo.security.ApplicationUserRole.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true) //to enable preAuthorize
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     //wire this class with passwordEncoder to use it for password
     private final PasswordEncoder passwordEncoder;
@@ -39,10 +36,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 //here Order has matter => they executed line by line
                 .antMatchers("/","index").permitAll() //this antMatchers for all the users
                 .antMatchers("/api/**").hasRole(STUDENT.name()) //everything after api just accessible by student
-                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission()) //return Course:wite
-                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
-                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
-                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
+//                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission()) //return Course:wite
+//                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
+//                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
+//                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
