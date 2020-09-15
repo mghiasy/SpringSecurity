@@ -14,6 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+import java.util.concurrent.TimeUnit;
+
 import static com.example.demo.security.ApplicationUserRole.*;
 
 @Configuration
@@ -48,7 +51,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
                 .defaultSuccessUrl("/courses",true)//redirect to this Url after login
                 .and()
-                .rememberMe(); //remember credentials as default for 2 weeks
+                .rememberMe() //remember credentials as default for 2 weeks
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
+                    .key("somethingverysecure"); //Key is used to hash the content of Cookie (userName & ExpirationDate)
     }
 
     @Override
