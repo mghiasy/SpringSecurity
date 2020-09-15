@@ -19,15 +19,16 @@
         <h2 class="form-signin-heading">Please sign in to my WebSite</h2>
         <p>
             <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required="" autofocus="">
+<!--            name should be defaultNames or same as parameters in Configure method -->
+            <input type="text" id="username" name="MyUserName" class="form-control" placeholder="Username" required="" autofocus="">
         </p>
         <p>
             <label for="password" class="sr-only">Password</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required="">
+            <input type="password" id="password" name="MyPassword" class="form-control" placeholder="Password" required="">
         </p>
 <!--        no need to add placeHolder, no need to be required-->
         <p>
-            <input type="checkbox" id="remember-me" name="remember-me" class="form-control">
+            <input type="checkbox" id="remember-me" name="MyRemember-Me" class="form-control">
             <label for="remember-me" style="color:white;">Remember me?</label>
         </p>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>

@@ -49,12 +49,16 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //.httpBasic(); //is used for Basic-Auth
                 .formLogin()//is used for Form-Authentication
-                    .loginPage("/login").permitAll()// use custom login page and permit all the users to it.
+                    .loginPage("/login")
+                    .permitAll()// use custom login page and permit all the users to it.
                     .defaultSuccessUrl("/courses",true)//redirect to this Url after login
+                    .passwordParameter("MyPassword")//customized names for user/pass
+                    .usernameParameter("MyUserName") //should be exactlu same aas "name" in login.html
                 .and()
                 .rememberMe() //remember credentials as default for 2 weeks
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
                     .key("somethingverysecure") //Key is used to hash the content of Cookie (userName &  ExpirationDate)
+                    .rememberMeParameter("MyRemember-Me")
                 .and()
                 .logout()
                     .logoutUrl("/logout") //customized logout endpoint
