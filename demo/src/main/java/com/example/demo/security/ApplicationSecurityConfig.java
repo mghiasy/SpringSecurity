@@ -1,19 +1,16 @@
 package com.example.demo.security;
 
+import com.example.demo.auth.ApplicationUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.concurrent.TimeUnit;
@@ -26,9 +23,11 @@ import static com.example.demo.security.ApplicationUserRole.*;
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     //wire this class with passwordEncoder to use it for password
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationUserService applicationUserService; //inject our custom USER_DETAIL_SERVICE
     @Autowired
-    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
+    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
         this.passwordEncoder = passwordEncoder;
+        this.applicationUserService = applicationUserService;
     }
 
 
@@ -71,38 +70,55 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                     .logoutSuccessUrl("/login");
     }
 
+//FOR IN MEMORY USERS
+//    @Override
+//    @Bean //? why
+//    protected UserDetailsService userDetailsService() {
+//        UserDetails newUser = User.builder()// has Authorities as Collection<? extends GrantedAuthority> getAuthorities();
+//                .username("Maryam")
+//                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
+//                //.roles("STUDENT") //will be matched to ROLE_STUDENT
+//                //.roles(STUDENT.name())
+//                    // inside Roles method we have :
+//                    // List<GrantedAuthority> authorities = new ArrayList(roles.length);
+//                    //authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+//                    // if we want to add authorities to user directly we should do the same
+//
+//
+//                .authorities(STUDENT.getGrantedAuthority())
+//                .build();
+//
+//        UserDetails adminUser = User.builder()
+//                .username("Admin")
+//                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
+//                //.roles(ADMIN.name()) //will be matched to ROLE_STUDENT
+//                .authorities(ADMIN.getGrantedAuthority())
+//                .build();
+//
+//        UserDetails adminTraineeUser = User.builder()
+//                .username("AdminT")
+//                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
+//               // .roles(ADMINTRAINEE.name()) //will be matched to ROLE_STUDENT
+//                .authorities(ADMINTRAINEE.getGrantedAuthority())
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(newUser,adminUser,adminTraineeUser);
+//    }
+
+    @Bean //?why
+    //FOR USERS CREATED IN CUSTOM USER_DETAIL_SERVICE ==> IN DAO
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder); //allaws password to be encoded
+        provider.setUserDetailsService(applicationUserService); //set our custom USER_DETAIL_SERVICE
+        return provider;
+    }
+
+    //here we should override Configure(AuthenticationManagerBuilder)
+    // to set the authenticationProvider for Auth
 
     @Override
-    @Bean //? why
-    protected UserDetailsService userDetailsService() {
-        UserDetails newUser = User.builder()// has Authorities as Collection<? extends GrantedAuthority> getAuthorities();
-                .username("Maryam")
-                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
-                //.roles("STUDENT") //will be matched to ROLE_STUDENT
-                //.roles(STUDENT.name())
-                    // inside Roles method we have :
-                    // List<GrantedAuthority> authorities = new ArrayList(roles.length);
-                    //authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-                    // if we want to add authorities to user directly we should do the same
-
-
-                .authorities(STUDENT.getGrantedAuthority())
-                .build();
-
-        UserDetails adminUser = User.builder()
-                .username("Admin")
-                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
-                //.roles(ADMIN.name()) //will be matched to ROLE_STUDENT
-                .authorities(ADMIN.getGrantedAuthority())
-                .build();
-
-        UserDetails adminTraineeUser = User.builder()
-                .username("AdminT")
-                .password(passwordEncoder.encode("123")) //to encode the password to bcrypt
-//                .roles(ADMINTRAINEE.name()) //will be matched to ROLE_STUDENT
-                .authorities(ADMINTRAINEE.getGrantedAuthority())
-                .build();
-
-        return new InMemoryUserDetailsManager(newUser,adminUser,adminTraineeUser);
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider()); //use our custom authenticationProvider
     }
 }
