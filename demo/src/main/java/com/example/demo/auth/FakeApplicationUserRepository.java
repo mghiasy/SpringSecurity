@@ -22,12 +22,11 @@ public class FakeApplicationUserRepository implements ApplicationUserDAO{
 
     @Override
     public Optional<ApplicationUser> selectApplicationUserByUsername(String username) {
-        Optional<ApplicationUser> tt= getApplicationUsers()
+        return getApplicationUsers()
                 .stream()
                 .filter(applicationUser -> username.equals(applicationUser.getUsername()))
                 //.filter(applicationUser -> username.equals(applicationUser))
                 .findFirst();
-        return tt;
     }
 
     private List<ApplicationUser> getApplicationUsers() {
