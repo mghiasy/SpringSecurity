@@ -107,6 +107,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean //?why
     //FOR USERS CREATED IN CUSTOM USER_DETAIL_SERVICE ==> IN DAO
+    //CREATE PROVIDER
     public DaoAuthenticationProvider daoAuthenticationProvider(){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder); //allaws password to be encoded
