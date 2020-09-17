@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
 import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtUserPassAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -35,6 +37,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()//later
+                //JWT => NO NEED TO FORM => WE NEED TO CONFIGURE FILTER
+                .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager())) //authenticationManager() come from WebSecurityConfigurerAdapter
+                    //SET STATUS OF SESSION TO STATELESS
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
                 //here Order has matter => they executed line by line
                     .antMatchers("/","index").permitAll() //this antMatchers for all the users
@@ -44,30 +51,32 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 //                  .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURDE_WRITE.getPermission())
 //                  .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
                     .anyRequest()
-                    .authenticated()
-                .and()
-                //.httpBasic(); //is used for Basic-Auth
-                .formLogin()//is used for Form-Authentication
-                    .loginPage("/login")
-                    .permitAll()// use custom login page and permit all the users to it.
-                    .defaultSuccessUrl("/courses",true)//redirect to this Url after login
-                    .passwordParameter("MyPassword")//customized names for user/pass
-                    .usernameParameter("MyUserName") //should be exactlu same aas "name" in login.html
-                .and()
-                .rememberMe() //remember credentials as default for 2 weeks
-                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
-                    .key("somethingverysecure") //Key is used to hash the content of Cookie (userName &  ExpirationDate)
-                    .rememberMeParameter("MyRemember-Me")
-                .and()
-                .logout()
-                    .logoutUrl("/logout") //customized logout endpoint
-                    //because we have disabled csrf => otherwise we should delete this line => because should be POST
-                    //means we wanna go to /logout with GET method
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET")) //to set logout as a GET method
-                    .clearAuthentication(true)
-                    .invalidateHttpSession(true)
-                    .deleteCookies("JSESSIONID","remember-me")
-                    .logoutSuccessUrl("/login");
+                    .authenticated();
+
+//       THIS IS FOR FORM-AUTHENTICATION => TO CHANGE IT TO TOKEN WE SHOULD REMOVE IT
+//                .and()
+//                //.httpBasic(); //is used for Basic-Auth
+//                .formLogin()//is used for Form-Authentication
+//                    .loginPage("/login")
+//                    .permitAll()// use custom login page and permit all the users to it.
+//                    .defaultSuccessUrl("/courses",true)//redirect to this Url after login
+//                    .passwordParameter("MyPassword")//customized names for user/pass
+//                    .usernameParameter("MyUserName") //should be exactlu same aas "name" in login.html
+//                .and()
+//                .rememberMe() //remember credentials as default for 2 weeks
+//                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) //change the defult value of rememberMe to 21 Days
+//                    .key("somethingverysecure") //Key is used to hash the content of Cookie (userName &  ExpirationDate)
+//                    .rememberMeParameter("MyRemember-Me")
+//                .and()
+//                .logout()
+//                    .logoutUrl("/logout") //customized logout endpoint
+//                    //because we have disabled csrf => otherwise we should delete this line => because should be POST
+//                    //means we wanna go to /logout with GET method
+//                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET")) //to set logout as a GET method
+//                    .clearAuthentication(true)
+//                    .invalidateHttpSession(true)
+//                    .deleteCookies("JSESSIONID","remember-me")
+//                    .logoutSuccessUrl("/login");
     }
 
 //FOR IN MEMORY USERS
