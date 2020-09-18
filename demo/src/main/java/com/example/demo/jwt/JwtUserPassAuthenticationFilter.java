@@ -61,7 +61,7 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
                 .setSubject(authResult.getName()) //header => subject in token = username
                 .claim("Authorities",authResult.getAuthorities()) //body => convert it to type claim
                 .setIssuedAt(new Date()) //now
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().minusWeeks(2))) //convert LocalDate.now() to java.sql.Date
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //convert LocalDate.now() to java.sql.Date
                 .signWith(Keys.hmacShaKeyFor(key.getBytes())) //signature
                 .compact();// compacting it into its final String form. A signed JWT is called a 'JWS'.
         //add token to responseHeader and send it to client

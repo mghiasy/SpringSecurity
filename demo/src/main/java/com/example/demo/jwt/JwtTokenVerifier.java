@@ -39,18 +39,21 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
         try {
             //with same key
             String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
-            //VERIFY JWT
+            //2) Parse JWT
             //Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jws).getBody().getSubject().equals("Joe");
             Jws<Claims> Jws = Jwts.parserBuilder() //has header, body and signature
                     .setSigningKey(Keys.hmacShaKeyFor(key.getBytes())) //same as creating token
                     .build()
                     .parseClaimsJws(actualToken);//A signed JWT is called a 'JWS'
+//            Jws<Claims> Jws =Jwts.parser()
+//                    .setSigningKey(Keys.hmacShaKeyFor(key.getBytes()))
+//                    .parseClaimsJws(actualToken);
             //get the body of Jws of type "Claim"
             Claims body = Jws.getBody();
             String username=body.getSubject(); //subject in token = username according to time we create it
             //here we wanna get Authorities which is in body
             //Authorities is LIST of MAP<String,String> => key ="authority" , value = "Course:write"
-            List<Map<String,String>> authorities = (List<Map<String,String>>) body.get("authorities");//get by value and convert it to List<Map<String,String>>
+            List<Map<String,String>> authorities = (List<Map<String,String>>) body.get("Authorities");//get by value and convert it to List<Map<String,String>>
             //now we want to get every "authority" of list and convert them to type "SimpleGrantAuthority"
             //to convert every item in list we use Stream and Map (x->new TYPE(x))
             Set<SimpleGrantedAuthority> authority = authorities
@@ -59,7 +62,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
                     .collect(Collectors.toSet());//change list to set
 
 
-            //to validate the token => Create an object of type UsernamePasswordAuthenticationToken with values of token
+            //3) to validate the token => Create an object of type UsernamePasswordAuthenticationToken with values of token
             //if you could create it with out error => token in valid
             Authentication auth = new UsernamePasswordAuthenticationToken(
                     username, //principle
@@ -76,7 +79,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
             throw new IllegalStateException("Token can not be trust");
         }
 
-        //After every thing send req/rsp to the next filter
+        //4) After every thing send req/rsp to the next filter
         filterChain.doFilter(request,response);
     }
 
