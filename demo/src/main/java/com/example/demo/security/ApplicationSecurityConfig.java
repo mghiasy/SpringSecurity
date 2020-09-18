@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
 import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtTokenVerifier;
 import com.example.demo.jwt.JwtUserPassAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -36,13 +37,15 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()//later
+                .csrf().disable()
+                //SET STATUS OF SESSION TO STATELESS
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 //JWT => NO NEED TO FORM => WE NEED TO CONFIGURE FILTER
                 //HERE WE SET THAT SPRING GO AND RUN THE FILTER THAT WE CREATED
                 .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager())) //authenticationManager() come from WebSecurityConfigurerAdapter
-                    //SET STATUS OF SESSION TO STATELESS
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                //REGISTER JWT VERIFIER => TO BE EXECUTED AFTER JwtUserPassAuthenticationFilter
+                .addFilterAfter(new JwtTokenVerifier(),JwtUserPassAuthenticationFilter.class)
                 .authorizeRequests()
                 //here Order has matter => they executed line by line
                     .antMatchers("/","index").permitAll() //this antMatchers for all the users

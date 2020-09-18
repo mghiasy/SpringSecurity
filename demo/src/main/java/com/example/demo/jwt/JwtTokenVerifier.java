@@ -72,7 +72,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
         //IF GOES TO CATCH BLOCK MEANS TOKEN IS NOT VALID
         //OR IS NOT CORRECT OR IS EXPIRED OR ...
         catch (JwtException e){
-            throw new IllegalStateException("Token can not be trust"); 
+            throw new IllegalStateException("Token can not be trust");
         }
     }
 
