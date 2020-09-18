@@ -38,6 +38,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()//later
                 //JWT => NO NEED TO FORM => WE NEED TO CONFIGURE FILTER
+                //HERE WE SET THAT SPRING GO AND RUN THE FILTER THAT WE CREATED
                 .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager())) //authenticationManager() come from WebSecurityConfigurerAdapter
                     //SET STATUS OF SESSION TO STATELESS
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

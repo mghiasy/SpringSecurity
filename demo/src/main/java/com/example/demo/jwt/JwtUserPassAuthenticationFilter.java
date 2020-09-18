@@ -45,7 +45,7 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
                     authenticationRequest.getPassword() //password to be valid
             );
 
-            return authenticationManager.authenticate(authentication);
+            return authenticationManager.authenticate(authentication); // if = true => is Authenticated or isValid
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -54,16 +54,18 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String key ="somethingSecureAndVeryLong";
+        String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
         //Generate the token of type String
+        //String jws = Jwts.builder().setSubject("Joe").signWith(key).compact();
         String token=Jwts.builder()
                 .setSubject(authResult.getName()) //header
                 .claim("Authorities",authResult.getAuthorities()) //body
                 .setIssuedAt(new Date()) //now
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().minusWeeks(2))) //convert LocalDate.now() to java.sql.Date
                 .signWith(Keys.hmacShaKeyFor(key.getBytes())) //signature
-                .compact();
+                .compact();// compacting it into its final String form. A signed JWT is called a 'JWS'.
         //add token to responseHeader and send it to client
-        response.addHeader("Authorization","Bearer "+token);
+        //authorization = token name , Bearer = token type
+        response.addHeader("authorization","Bearer "+token);
     }
 }
