@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -56,11 +57,22 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
                     .map(m -> new SimpleGrantedAuthority(m.get("authority"))) //get from map by key
                     .collect(Collectors.toSet());//change list to set
 
+
+            //to validate the token => Create an object of type UsernamePasswordAuthenticationToken with values of token
+            //if you could create it with out error => token in valid
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    username, //principle
+                    null,//credential
+                    authority//authorities
+            );
+            //This line authenticates the token
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
         }
         //IF GOES TO CATCH BLOCK MEANS TOKEN IS NOT VALID
         //OR IS NOT CORRECT OR IS EXPIRED OR ...
         catch (JwtException e){
-
+            throw new IllegalStateException("Token can not be trust"); 
         }
     }
 
