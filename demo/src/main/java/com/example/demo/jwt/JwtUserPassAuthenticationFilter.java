@@ -58,8 +58,8 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
         //Generate the token of type String
         //String jws = Jwts.builder().setSubject("Joe").signWith(key).compact();
         String token=Jwts.builder()
-                .setSubject(authResult.getName()) //header
-                .claim("Authorities",authResult.getAuthorities()) //body
+                .setSubject(authResult.getName()) //header => subject in token = username
+                .claim("Authorities",authResult.getAuthorities()) //body => convert it to type claim
                 .setIssuedAt(new Date()) //now
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().minusWeeks(2))) //convert LocalDate.now() to java.sql.Date
                 .signWith(Keys.hmacShaKeyFor(key.getBytes())) //signature
