@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 //TO VERIFY THE TOKEN SENT BY CLIENT
 public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should be executed exactly once per req
     @Override
+    //filter in total receives the req and rsp  and they should pass the req and rsp to the next filter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //1)Get token from request: request.getHeader("tokenName") = Bearer +realToken
         String token= request.getHeader("authorization"); //authorization=the tokenName
@@ -30,20 +31,20 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
         //from com.google.common.base.Strings library
         if(Strings.isNullOrEmpty(token) || !token.startsWith("Bearer ")){
             //some thing is wrong => reject the request
-            filterChain.doFilter(request,response); //dofilter = reject
+            filterChain.doFilter(request,response); //go to the next filter but since authorization is empty => it will be rejected
         }
 
-        String exactToken = token.replace("Bearer ",""); //remove "Bearer " from beginning of token
+        String actualToken = token.replace("Bearer ",""); //remove "Bearer " from beginning of token
         //CHECK HEADER VERIFICATION
         try {
             //with same key
             String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
             //VERIFY JWT
             //Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jws).getBody().getSubject().equals("Joe");
-            Jws<Claims> Jws = Jwts.parserBuilder()
+            Jws<Claims> Jws = Jwts.parserBuilder() //has header, body and signature
                     .setSigningKey(Keys.hmacShaKeyFor(key.getBytes())) //same as creating token
                     .build()
-                    .parseClaimsJws(exactToken);//A signed JWT is called a 'JWS'
+                    .parseClaimsJws(actualToken);//A signed JWT is called a 'JWS'
             //get the body of Jws of type "Claim"
             Claims body = Jws.getBody();
             String username=body.getSubject(); //subject in token = username according to time we create it
@@ -74,6 +75,9 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
         catch (JwtException e){
             throw new IllegalStateException("Token can not be trust");
         }
+
+        //After every thing send req/rsp to the next filter
+        filterChain.doFilter(request,response);
     }
 
 }
