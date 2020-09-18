@@ -44,7 +44,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 //JWT => NO NEED TO FORM => WE NEED TO CONFIGURE FILTER
                 //HERE WE SET THAT SPRING GO AND RUN THE FILTER THAT WE CREATED
                 .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager())) //authenticationManager() come from WebSecurityConfigurerAdapter
-                //REGISTER JWT VERIFIER => TO BE EXECUTED AFTER JwtUserPassAuthenticationFilter
+                //REGISTER JWT VERIFIER FILTER => TO BE EXECUTED AFTER JwtUserPassAuthenticationFilter
                 .addFilterAfter(new JwtTokenVerifier(),JwtUserPassAuthenticationFilter.class)
                 .authorizeRequests()
                 //here Order has matter => they executed line by line
