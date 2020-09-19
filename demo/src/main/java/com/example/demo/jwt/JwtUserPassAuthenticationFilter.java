@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,16 @@ import java.util.Date;
 //Spring does it by default via UsernamePasswordAuthenticationFilter class but we can customize it
 public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    //inject token info from JwtConfig
+    private final JwtConfig jwtConfig;
+    private final SecretKey secretKey;
 
-    public JwtUserPassAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JwtUserPassAuthenticationFilter(AuthenticationManager authenticationManager,
+                                           JwtConfig jwtConfig,
+                                           SecretKey secretKey) {
         this.authenticationManager = authenticationManager;
+        this.jwtConfig = jwtConfig;
+        this.secretKey = secretKey;
     }
 
     @Override
@@ -38,7 +46,7 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
                     //for this authenticationRequest we wanna check whether user/pass are correct
 
             //2)Validate the credentials
-//Authentication is interface, we need UsernamePasswordAuthenticationToken
+            //Authentication is interface, we need UsernamePasswordAuthenticationToken
             //get authReq and validate is based on principles
             Authentication authentication= new UsernamePasswordAuthenticationToken(
                     authenticationRequest.getUsername(), // username to be existed
@@ -54,7 +62,7 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
+        //String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
         //Generate the token of type String
         //String jws = Jwts.builder().setSubject("Joe").signWith(key).compact();
         String token=Jwts.builder()
@@ -62,10 +70,12 @@ public class JwtUserPassAuthenticationFilter extends UsernamePasswordAuthenticat
                 .claim("Authorities",authResult.getAuthorities()) //body => convert it to type claim
                 .setIssuedAt(new Date()) //now
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //convert LocalDate.now() to java.sql.Date
-                .signWith(Keys.hmacShaKeyFor(key.getBytes())) //signature
+                //.signWith(Keys.hmacShaKeyFor(key.getBytes()))
+                .signWith(secretKey) //signature
                 .compact();// compacting it into its final String form. A signed JWT is called a 'JWS'.
         //add token to responseHeader and send it to client
         //authorization = token name , Bearer = token type
-        response.addHeader("authorization","Bearer "+token);
+        //response.addHeader("authorization","Bearer "+token);
+        response.addHeader(jwtConfig.getAuthorizationHeader(),jwtConfig.getTokenPrefix()+ token);
     }
 }

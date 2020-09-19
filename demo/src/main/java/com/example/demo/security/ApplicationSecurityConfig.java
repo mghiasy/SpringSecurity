@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
 import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtConfig;
 import com.example.demo.jwt.JwtTokenVerifier;
 import com.example.demo.jwt.JwtUserPassAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.concurrent.TimeUnit;
+import javax.crypto.SecretKey;
 
 import static com.example.demo.security.ApplicationUserRole.*;
 
@@ -27,10 +27,15 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     //wire this class with passwordEncoder to use it for password
     private final PasswordEncoder passwordEncoder;
     private final ApplicationUserService applicationUserService; //inject our custom USER_DETAIL_SERVICE
+    private final SecretKey secretKey; //secretKey is bean not JwtSecretKey
+    private final JwtConfig jwtConfig;
+
     @Autowired
-    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
+    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService, SecretKey secretKey, JwtConfig jwtConfig) {
         this.passwordEncoder = passwordEncoder;
         this.applicationUserService = applicationUserService;
+        this.secretKey = secretKey;
+        this.jwtConfig = jwtConfig;
     }
 
 
@@ -43,9 +48,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //JWT => NO NEED TO FORM => WE NEED TO CONFIGURE FILTER
                 //HERE WE SET THAT SPRING GO AND RUN THE FILTER THAT WE CREATED
-                .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager())) //authenticationManager() come from WebSecurityConfigurerAdapter
+                //after making configuration => for this 2 config we are passing JwtConfig && secretKey
+                .addFilter(new JwtUserPassAuthenticationFilter(authenticationManager(), jwtConfig, secretKey)) //authenticationManager() come from WebSecurityConfigurerAdapter
                 //REGISTER JWT VERIFIER FILTER => TO BE EXECUTED AFTER JwtUserPassAuthenticationFilter
-                .addFilterAfter(new JwtTokenVerifier(),JwtUserPassAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenVerifier(jwtConfig, secretKey),JwtUserPassAuthenticationFilter.class)
                 .authorizeRequests()
                 //here Order has matter => they executed line by line
                     .antMatchers("/","index").permitAll() //this antMatchers for all the users

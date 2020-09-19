@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -22,14 +23,26 @@ import java.util.stream.Collectors;
 
 //TO VERIFY THE TOKEN SENT BY CLIENT
 public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should be executed exactly once per req
+
+    //inject token info from JwtConfig
+    private final SecretKey secretKey;
+    private final JwtConfig jwtConfig;
+
+    public JwtTokenVerifier(JwtConfig jwtConfig, SecretKey secretKey) {
+        this.jwtConfig = jwtConfig;
+        this.secretKey = secretKey;
+    }
+
     @Override
     //filter in total receives the req and rsp  and they should pass the req and rsp to the next filter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //1)Get token from request: request.getHeader("tokenName") = Bearer +realToken
-        String token= request.getHeader("authorization"); //authorization=the tokenName
+        //String token= request.getHeader("authorization")
+        String token= request.getHeader(jwtConfig.getAuthorizationHeader()); //authorization=the tokenName
 
         //from com.google.common.base.Strings library
-        if(Strings.isNullOrEmpty(token) || !token.startsWith("Bearer ")){
+        //if(Strings.isNullOrEmpty(token) || !token.startsWith("Bearer ")){
+        if(Strings.isNullOrEmpty(token) || !token.startsWith(jwtConfig.getTokenPrefix())){
             //some thing is wrong => reject the request
             filterChain.doFilter(request,response); //go to the next filter but since authorization is empty => it will be rejected
         }
@@ -37,12 +50,13 @@ public class JwtTokenVerifier extends OncePerRequestFilter {//this filter should
         String actualToken = token.replace("Bearer ",""); //remove "Bearer " from beginning of token
         //CHECK HEADER VERIFICATION
         try {
-            //with same key
-            String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
+            //with same key => no need to key here => comes from config
+            //String key ="somethingSecureAndVeryLongThe specified key byte array is 208 bits which is not secure enough,So I made it longer";
             //2) Parse JWT
             //Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jws).getBody().getSubject().equals("Joe");
             Jws<Claims> Jws = Jwts.parserBuilder() //has header, body and signature
-                    .setSigningKey(Keys.hmacShaKeyFor(key.getBytes())) //same as creating token
+                    //.setSigningKey(Keys.hmacShaKeyFor(key.getBytes()))
+                    .setSigningKey(secretKey) //same as creating token
                     .build()
                     .parseClaimsJws(actualToken);//A signed JWT is called a 'JWS'
 //            Jws<Claims> Jws =Jwts.parser()
